@@ -18,6 +18,21 @@ router.get("/", async function(req, res, next) {
   }
 });
 
+/* Use data from search bar to return a list of customers
+   that have either the matching passed first name or last name */
+
+router.post("/", async function(req, res, next) {
+  try {
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
+    const customers = await Customer.search(firstName, lastName);
+
+    return res.render("customer_list.html", { customers });
+  } catch(e) {
+    return next(e);
+  }
+})
+
 /** Form to add a new customer. */
 
 router.get("/add/", async function(req, res, next) {
@@ -54,7 +69,9 @@ router.get("/:id/", async function(req, res, next) {
 
     const reservations = await customer.getReservations();
 
-    return res.render("customer_detail.html", { customer, reservations });
+    const name = await customer.fullName(req.params.id);
+
+    return res.render("customer_detail.html", { customer, reservations, name });
   } catch (err) {
     return next(err);
   }
@@ -66,7 +83,9 @@ router.get("/:id/edit/", async function(req, res, next) {
   try {
     const customer = await Customer.get(req.params.id);
 
-    res.render("customer_edit_form.html", { customer });
+    const name = await customer.fullName(req.params.id);
+
+    res.render("customer_edit_form.html", { customer, name });
   } catch (err) {
     return next(err);
   }

@@ -53,6 +53,40 @@ class Customer {
     return new Customer(customer);
   }
 
+  /* Search for customers with either first name or last name */
+
+  static async search(firstName, lastName) {
+    const results = await db.query(
+      `SELECT id, 
+         first_name AS "firstName",  
+         last_name AS "lastName",
+         phone,
+         notes 
+       FROM customers
+       WHERE first_name = $1
+       OR last_name = $2`,
+       [firstName, lastName]);
+
+    return results.rows.map(c => new Customer(c));
+  }
+
+  /* Return the customer's first and last name in format
+     'firstName lastName' */
+
+  async fullName(id) {
+    const results = await db.query(
+      `SELECT id,
+        first_name AS "firstName",
+        last_name AS "lastName"
+        FROM customers WHERE id = $1`,
+      [id]
+    );
+
+    const {firstName, lastName} = results.rows[0];
+    const name = `${firstName} ${lastName}`;
+    return name;
+  }
+
   /** get all reservations for this customer. */
 
   async getReservations() {
